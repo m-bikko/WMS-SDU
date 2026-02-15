@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, Box, Home, Package, Settings, Truck } from "lucide-react"
+import { BarChart3, ClipboardList, Home, Layers, Package, Settings, ShoppingCart, Truck, Users, Banknote, ShoppingBag } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,7 @@ export function Sidebar({ className }: SidebarProps) {
         },
         {
             label: "Inventory",
-            icon: Box,
+            icon: ClipboardList,
             href: "/inventory",
             active: pathname === "/inventory",
         },
@@ -33,15 +33,21 @@ export function Sidebar({ className }: SidebarProps) {
         },
         {
             label: "Categories",
-            icon: Box,
+            icon: Layers,
             href: "/inventory/categories",
             active: pathname.startsWith("/inventory/categories"),
         },
         {
             label: "Orders",
-            icon: Package,
+            icon: ShoppingCart,
             href: "/orders",
             active: pathname.startsWith("/orders"),
+        },
+        {
+            label: "Purchases",
+            icon: ShoppingBag,
+            href: "/purchases",
+            active: pathname.startsWith("/purchases"),
         },
         {
             label: "Warehouses",
@@ -54,6 +60,18 @@ export function Sidebar({ className }: SidebarProps) {
             icon: BarChart3,
             href: "/reports",
             active: pathname === "/reports",
+        },
+        {
+            label: "Customers",
+            icon: Users,
+            href: "/customers",
+            active: pathname.startsWith("/customers"),
+        },
+        {
+            label: "Finance",
+            icon: Banknote,
+            href: "/finance",
+            active: pathname === "/finance",
         },
         {
             label: "Settings",

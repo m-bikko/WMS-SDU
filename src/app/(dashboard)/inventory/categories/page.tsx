@@ -1,5 +1,6 @@
 import { getCategories } from "@/lib/api/categories"
 import { getProducts } from "@/lib/api/products"
+import { getWarehouses } from "@/lib/api/warehouses"
 import { CategoryTree } from "@/components/inventory/category-tree"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -8,6 +9,7 @@ import { CategoryDialog } from "@/components/inventory/category-dialog"
 export default async function CategoriesPage() {
     const categories = await getCategories()
     const products = await getProducts()
+    const warehouses = await getWarehouses()
 
     return (
         <div className="space-y-6">
@@ -21,7 +23,7 @@ export default async function CategoriesPage() {
             </div>
 
             <div className="rounded-md border p-4">
-                <CategoryTree categories={categories} products={products} />
+                <CategoryTree categories={categories} products={products} warehouses={warehouses} />
             </div>
         </div>
     )

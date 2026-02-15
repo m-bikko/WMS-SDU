@@ -1,18 +1,35 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getProducts } from "@/lib/api/products"
 import { getCategories } from "@/lib/api/categories"
+import { getWarehouses } from "@/lib/api/warehouses"
 import { Box, Package, DollarSign } from "lucide-react"
+import { WarehouseFilter } from "@/components/inventory/warehouse-filter"
 
-export default async function InventoryDashboardPage() {
-    const products: any[] = await getProducts() || []
+interface InventoryDashboardPageProps {
+    searchParams?: Promise<{
+        warehouseId?: string
+    }>
+}
+
+export default async function InventoryDashboardPage(props: InventoryDashboardPageProps) {
+    const searchParams = await props.searchParams
+    const warehouseId = searchParams?.warehouseId || ""
+
+    const products: any[] = await getProducts("", "", warehouseId) || []
     const categories = await getCategories() || []
+    const warehouses = await getWarehouses() || []
 
     const totalValue = products.reduce((acc, p) => acc + (p.cost_price * (p.total_stock || 0)), 0)
     const lowStockCount = products.filter(p => (p.total_stock || 0) <= (p.low_stock_threshold || 5)).length
 
     return (
         <div className="space-y-6">
-            <h2 className="text-3xl font-bold tracking-tight">Inventory Overview</h2>
+            <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-bold tracking-tight">Inventory Overview</h2>
+                <div className="flex items-center space-x-2">
+                    <WarehouseFilter warehouses={warehouses} />
+                </div>
+            </div>
 
             <div className="grid gap-4 md:grid-cols-3">
                 <Card>
@@ -41,7 +58,7 @@ export default async function InventoryDashboardPage() {
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">${totalValue.toFixed(2)}</div>
+                        <div className="text-2xl font-bold">₸{totalValue.toFixed(2)}</div>
                     </CardContent>
                 </Card>
             </div>

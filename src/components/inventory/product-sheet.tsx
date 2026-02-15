@@ -28,6 +28,7 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
     Select,
@@ -38,6 +39,7 @@ import {
 } from "@/components/ui/select"
 import { createProduct, updateProduct, type Product } from "@/lib/api/products"
 import { type Category } from "@/lib/api/categories"
+import { type Warehouse } from "@/lib/api/warehouses"
 import { AttributesEditor } from "./attributes-editor"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { createClient } from "@/lib/supabase/client"
@@ -47,6 +49,7 @@ const formSchema = z.object({
     name: z.string().min(2, { message: "Name must be at least 2 characters." }),
     sku: z.string().min(1, { message: "SKU is required." }),
     category_id: z.string().optional(),
+    warehouse_id: z.string().optional(),
     description: z.string().optional(),
     cost_price: z.coerce.number().min(0),
     sales_price: z.coerce.number().min(0),
@@ -56,10 +59,12 @@ const formSchema = z.object({
 interface ProductSheetProps {
     product?: Product
     categories: Category[]
+    warehouses: Warehouse[]
+    initialCategoryId?: string
     children?: React.ReactNode
 }
 
-export function ProductSheet({ product, categories, children }: ProductSheetProps) {
+export function ProductSheet({ product, categories, warehouses, initialCategoryId, children }: ProductSheetProps) {
     const [open, setOpen] = useState(false)
     const [uploading, setUploading] = useState(false)
     const [images, setImages] = useState<string[]>(product?.images || [])
@@ -71,7 +76,8 @@ export function ProductSheet({ product, categories, children }: ProductSheetProp
         defaultValues: {
             name: product?.name || "",
             sku: product?.sku || "",
-            category_id: product?.category_id || "null",
+            category_id: product?.category_id || initialCategoryId || "null",
+            warehouse_id: (product as any)?.warehouse_id || "null",
             description: product?.description || "",
             cost_price: product?.cost_price || 0,
             sales_price: product?.sales_price || 0,
@@ -134,6 +140,16 @@ export function ProductSheet({ product, categories, children }: ProductSheetProp
         formData.append("sales_price", values.sales_price.toString())
         formData.append("attributes", JSON.stringify(values.attributes || {}))
         formData.append("images", JSON.stringify(images))
+
+        // Collect stocks from inputs manually
+        const stocks: Record<string, number> = {}
+        warehouses.forEach(w => {
+            const input = document.getElementById(`stock-${w.id}`) as HTMLInputElement
+            if (input) {
+                stocks[w.id] = parseInt(input.value) || 0
+            }
+        })
+        formData.append("stocks", JSON.stringify(stocks))
 
         try {
             if (product) {
@@ -256,6 +272,42 @@ export function ProductSheet({ product, categories, children }: ProductSheetProp
                                     </FormItem>
                                 )}
                             />
+
+                            <div className="grid gap-2">
+                                <Label>Inventory by Warehouse</Label>
+                                <div className="rounded-md border p-4 space-y-4">
+                                    {warehouses.map((warehouse) => {
+                                        const stock = (product as any)?.stocks?.find(
+                                            (s: any) => s.warehouse_id === warehouse.id
+                                        )
+                                        const currentStock = stock?.quantity || 0
+
+                                        return (
+                                            <div key={warehouse.id} className="grid grid-cols-4 items-center gap-4">
+                                                <Label htmlFor={`stock-${warehouse.id}`} className="col-span-2 text-sm font-normal">
+                                                    {warehouse.name}
+                                                </Label>
+                                                <div className="col-span-2">
+                                                    <Input
+                                                        id={`stock-${warehouse.id}`}
+                                                        type="number"
+                                                        min="0"
+                                                        defaultValue={currentStock}
+                                                        name={`stocks[${warehouse.id}]`}
+                                                        placeholder="0"
+                                                        className="h-8"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                    {warehouses.length === 0 && (
+                                        <p className="text-sm text-muted-foreground text-center py-2">
+                                            No warehouses found. Please create a warehouse first.
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
 
                             <FormField
                                 control={form.control}

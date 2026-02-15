@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronRight, Folder, MoreHorizontal, Trash, Package } from "lucide-react"
+import { ChevronRight, Folder, MoreHorizontal, Trash, Package, Plus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -21,14 +21,19 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
 
+import { type Warehouse } from "@/lib/api/warehouses"
+import { ProductSheet } from "@/components/inventory/product-sheet"
+import { ProductActions } from "@/app/(dashboard)/inventory/products/actions"
+
 interface CategoryTreeProps {
     categories: Category[]
     products?: Product[]
+    warehouses: Warehouse[]
     parentId?: string | null
     level?: number
 }
 
-export function CategoryTree({ categories, products = [], parentId = null, level = 0 }: CategoryTreeProps) {
+export function CategoryTree({ categories, products = [], warehouses = [], parentId = null, level = 0 }: CategoryTreeProps) {
     const router = useRouter()
     const currentCategories = categories.filter((c) => c.parent_id === parentId)
     const currentProducts = products.filter((p) => p.category_id === parentId)
@@ -70,6 +75,12 @@ export function CategoryTree({ categories, products = [], parentId = null, level
                                 )}
                             </div>
                             <div className="flex items-center gap-2">
+                                <ProductSheet categories={categories} warehouses={warehouses} initialCategoryId={category.id}>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" title="Add Product">
+                                        <Plus className="h-4 w-4" />
+                                        <span className="sr-only">Add Product</span>
+                                    </Button>
+                                </ProductSheet>
                                 <CategoryDialog category={category} categories={categories} />
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -91,7 +102,7 @@ export function CategoryTree({ categories, products = [], parentId = null, level
                             </div>
                         </div>
                         <CollapsibleContent>
-                            <CategoryTree categories={categories} products={products} parentId={category.id} level={level + 1} />
+                            <CategoryTree categories={categories} products={products} warehouses={warehouses} parentId={category.id} level={level + 1} />
                         </CollapsibleContent>
                     </Collapsible>
                 )
@@ -99,10 +110,19 @@ export function CategoryTree({ categories, products = [], parentId = null, level
 
             {currentProducts.map((product) => (
                 <div key={product.id} className="flex items-center justify-between rounded-md border p-2 ml-6 hover:bg-muted/50 bg-muted/20">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 min-w-[200px]">
+                            <Package className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">{product.name}</span>
+                        </div>
+                        <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="w-[100px]">SKU: {product.sku}</span>
+                            <span className="w-[80px]">Price: ₸{product.sales_price}</span>
+                            <span className="w-[80px]">Stock: {product.total_stock || 0}</span>
+                        </div>
+                    </div>
                     <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{product.name}</span>
-                        <span className="text-xs text-muted-foreground">({product.sku})</span>
+                        <ProductActions product={product} categories={categories} warehouses={warehouses} />
                     </div>
                 </div>
             ))}

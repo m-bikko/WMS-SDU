@@ -1,8 +1,9 @@
 import { getProducts, deleteProduct } from "@/lib/api/products"
 import { getCategories } from "@/lib/api/categories"
+import { getWarehouses } from "@/lib/api/warehouses"
 import { ProductSheet } from "@/components/inventory/product-sheet"
 import { Button } from "@/components/ui/button"
-import { Plus, MoreHorizontal, Pencil, Trash } from "lucide-react"
+import { Plus } from "lucide-react"
 import {
     Table,
     TableBody,
@@ -11,38 +12,34 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-// Client component for delete action or use server action form
 import { ProductActions } from "./actions"
 import { ProductSearch } from "@/components/inventory/product-search"
 import { CategoryFilter } from "@/components/inventory/category-filter"
+import { WarehouseFilter } from "@/components/inventory/warehouse-filter"
 
 interface ProductsPageProps {
-    searchParams?: {
+    searchParams?: Promise<{
         query?: string
         category?: string
-    }
+        warehouseId?: string
+    }>
 }
 
-export default async function ProductsPage(props: { searchParams: Promise<ProductsPageProps["searchParams"]> }) {
+export default async function ProductsPage(props: ProductsPageProps) {
     const searchParams = await props.searchParams
     const query = searchParams?.query || ""
     const categoryId = searchParams?.category || ""
+    const warehouseId = searchParams?.warehouseId || ""
 
-    const products = await getProducts(query, categoryId)
+    const products = await getProducts(query, categoryId, warehouseId)
     const categories = await getCategories()
+    const warehouses = await getWarehouses()
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold tracking-tight">Products</h2>
-                <ProductSheet categories={categories}>
+                <ProductSheet categories={categories} warehouses={warehouses}>
                     <Button>
                         <Plus className="mr-2 h-4 w-4" /> Add Product
                     </Button>
@@ -52,6 +49,7 @@ export default async function ProductsPage(props: { searchParams: Promise<Produc
             <div className="flex items-center gap-4">
                 <ProductSearch />
                 <CategoryFilter categories={categories} />
+                <WarehouseFilter warehouses={warehouses} />
             </div>
 
             <div className="rounded-md border">
@@ -62,7 +60,7 @@ export default async function ProductsPage(props: { searchParams: Promise<Produc
                             <TableHead>SKU</TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Category</TableHead>
-                            <TableHead className="text-right">Price</TableHead>
+                            <TableHead className="text-right">Price (₸)</TableHead>
                             <TableHead className="text-right">Stock</TableHead>
                             <TableHead className="w-[70px]"></TableHead>
                         </TableRow>
@@ -88,16 +86,24 @@ export default async function ProductsPage(props: { searchParams: Promise<Produc
                                 <TableCell className="font-medium">{product.sku}</TableCell>
                                 <TableCell>{product.name}</TableCell>
                                 <TableCell>{product.categories?.name || "-"}</TableCell>
-                                <TableCell className="text-right">${product.sales_price}</TableCell>
-                                <TableCell className="text-right">{product.stock_quantity || 0}</TableCell>
+                                <TableCell className="text-right">₸{product.sales_price}</TableCell>
+                                <TableCell className="text-right">
+                                    {warehouseId ? (
+                                        <span>
+                                            {(product.stocks?.find((s: any) => s.warehouse_id === warehouseId)?.quantity || 0)}
+                                        </span>
+                                    ) : (
+                                        <span>{product.total_stock || 0}</span>
+                                    )}
+                                </TableCell>
                                 <TableCell>
-                                    <ProductActions product={product} categories={categories} />
+                                    <ProductActions product={product} categories={categories} warehouses={warehouses} />
                                 </TableCell>
                             </TableRow>
                         ))}
                         {(!products || products.length === 0) && (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
+                                <TableCell colSpan={7} className="h-24 text-center">
                                     No products found.
                                 </TableCell>
                             </TableRow>
