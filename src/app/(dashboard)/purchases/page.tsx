@@ -34,14 +34,15 @@ export default async function PurchasesPage() {
                             <TableHead>Date</TableHead>
                             <TableHead>Supplier</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Itmes</TableHead>
+                            <TableHead>Items</TableHead>
                             <TableHead className="text-right">Total Amount</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {!purchases || purchases.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={6} className="h-24 text-center">
                                     No purchases found.
                                 </TableCell>
                             </TableRow>
@@ -51,9 +52,9 @@ export default async function PurchasesPage() {
                                     <TableCell>
                                         {purchase.created_at ? format(new Date(purchase.created_at), "MMM d, yyyy") : "-"}
                                     </TableCell>
-                                    <TableCell>{purchase.supplier_name}</TableCell>
+                                    <TableCell>{purchase.supplier_name || purchase.suppliers?.name}</TableCell>
                                     <TableCell>
-                                        <Badge variant={purchase.status === "completed" ? "default" : "secondary"}>
+                                        <Badge variant={purchase.status === "received" || purchase.status === "completed" ? "default" : "secondary"}>
                                             {purchase.status}
                                         </Badge>
                                     </TableCell>
@@ -62,6 +63,11 @@ export default async function PurchasesPage() {
                                     </TableCell>
                                     <TableCell className="text-right font-medium">
                                         ₸{Number(purchase.total_amount).toFixed(2)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button asChild variant="ghost" size="sm">
+                                            <Link href={`/purchases/${purchase.id}`}>View</Link>
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))

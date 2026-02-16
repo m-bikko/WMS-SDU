@@ -16,19 +16,21 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { type Product } from "@/lib/api/products"
-import { type Warehouse } from "@/lib/api/warehouses" // Ensure this type is exported
+import { type Warehouse } from "@/lib/api/warehouses"
+import { type Supplier } from "@/lib/api/suppliers"
 import { createPurchase, type CreatePurchaseItem } from "@/lib/api/purchases"
 import { Separator } from "@/components/ui/separator"
 
 interface CreatePurchaseFormProps {
     products: Product[]
     warehouses: Warehouse[]
+    suppliers: Supplier[]
 }
 
-export function CreatePurchaseForm({ products, warehouses }: CreatePurchaseFormProps) {
+export function CreatePurchaseForm({ products, warehouses, suppliers }: CreatePurchaseFormProps) {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
-    const [supplierName, setSupplierName] = useState("")
+    const [supplierId, setSupplierId] = useState("")
     const [warehouseId, setWarehouseId] = useState("")
 
     // Items state
@@ -74,6 +76,10 @@ export function CreatePurchaseForm({ products, warehouses }: CreatePurchaseFormP
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (!supplierId) {
+            toast.error("Please select a supplier")
+            return
+        }
         if (!warehouseId) {
             toast.error("Please select a warehouse")
             return
@@ -103,7 +109,7 @@ export function CreatePurchaseForm({ products, warehouses }: CreatePurchaseFormP
 
         setIsLoading(true)
         try {
-            const result = await createPurchase(supplierName, warehouseId, validItems)
+            const result = await createPurchase(supplierId, warehouseId, validItems)
             if (result.error) {
                 toast.error(result.error)
             } else {
@@ -123,14 +129,17 @@ export function CreatePurchaseForm({ products, warehouses }: CreatePurchaseFormP
         <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="supplier">Supplier Name</Label>
-                    <Input
-                        id="supplier"
-                        placeholder="e.g. Acme Corp"
-                        value={supplierName}
-                        onChange={(e) => setSupplierName(e.target.value)}
-                        required
-                    />
+                    <Label htmlFor="supplier">Supplier</Label>
+                    <Select value={supplierId} onValueChange={setSupplierId}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select Supplier" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {suppliers && suppliers.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="warehouse">Receiving Warehouse</Label>

@@ -161,6 +161,7 @@ export type Database = {
                 Row: {
                     created_at: string
                     customer_id: string | null
+                    customer_name: string
                     id: string
                     status: string
                     total_amount: number
@@ -169,6 +170,7 @@ export type Database = {
                 Insert: {
                     created_at?: string
                     customer_id?: string | null
+                    customer_name: string
                     id?: string
                     status?: string
                     total_amount?: number
@@ -177,6 +179,7 @@ export type Database = {
                 Update: {
                     created_at?: string
                     customer_id?: string | null
+                    customer_name?: string
                     id?: string
                     status?: string
                     total_amount?: number
@@ -251,6 +254,7 @@ export type Database = {
                     tax_rate: number | null
                     total_stock: number | null
                     updated_at: string | null
+                    warehouse_id: string | null
                 }
                 Insert: {
                     attributes?: Json | null
@@ -271,6 +275,7 @@ export type Database = {
                     tax_rate?: number | null
                     total_stock?: number | null
                     updated_at?: string | null
+                    warehouse_id?: string | null
                 }
                 Update: {
                     attributes?: Json | null
@@ -291,6 +296,7 @@ export type Database = {
                     tax_rate?: number | null
                     total_stock?: number | null
                     updated_at?: string | null
+                    warehouse_id?: string | null
                 }
                 Relationships: [
                     {
@@ -300,11 +306,18 @@ export type Database = {
                         referencedRelation: "categories"
                         referencedColumns: ["id"]
                     },
+                    {
+                        foreignKeyName: "products_warehouse_id_fkey"
+                        columns: ["warehouse_id"]
+                        isOneToOne: false
+                        referencedRelation: "warehouses"
+                        referencedColumns: ["id"]
+                    },
                 ]
             }
             purchase_items: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     id: string
                     product_id: string
                     purchase_id: string
@@ -312,7 +325,7 @@ export type Database = {
                     unit_cost: number
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     id?: string
                     product_id: string
                     purchase_id: string
@@ -320,7 +333,7 @@ export type Database = {
                     unit_cost: number
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     id?: string
                     product_id?: string
                     purchase_id?: string
@@ -346,33 +359,49 @@ export type Database = {
             }
             purchases: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     id: string
+                    notes: string | null
+                    received_at: string | null
                     status: Database["public"]["Enums"]["purchase_status"] | null
+                    supplier_id: string | null
                     supplier_name: string | null
                     total_amount: number | null
-                    updated_at: string
+                    updated_at: string | null
                     warehouse_id: string | null
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     id?: string
+                    notes?: string | null
+                    received_at?: string | null
                     status?: Database["public"]["Enums"]["purchase_status"] | null
+                    supplier_id?: string | null
                     supplier_name?: string | null
                     total_amount?: number | null
-                    updated_at?: string
+                    updated_at?: string | null
                     warehouse_id?: string | null
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     id?: string
+                    notes?: string | null
+                    received_at?: string | null
                     status?: Database["public"]["Enums"]["purchase_status"] | null
+                    supplier_id?: string | null
                     supplier_name?: string | null
                     total_amount?: number | null
-                    updated_at?: string
+                    updated_at?: string | null
                     warehouse_id?: string | null
                 }
                 Relationships: [
+                    {
+                        foreignKeyName: "purchases_supplier_id_fkey"
+                        columns: ["supplier_id"]
+                        isOneToOne: false
+                        referencedRelation: "suppliers"
+                        referencedColumns: ["id"]
+                    },
                     {
                         foreignKeyName: "purchases_warehouse_id_fkey"
                         columns: ["warehouse_id"]
@@ -440,10 +469,43 @@ export type Database = {
                     },
                 ]
             }
+            suppliers: {
+                Row: {
+                    address: string | null
+                    contact_name: string | null
+                    created_at: string | null
+                    email: string | null
+                    id: string
+                    name: string
+                    phone: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    address?: string | null
+                    contact_name?: string | null
+                    created_at?: string | null
+                    email?: string | null
+                    id?: string
+                    name: string
+                    phone?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    address?: string | null
+                    contact_name?: string | null
+                    created_at?: string | null
+                    email?: string | null
+                    id?: string
+                    name?: string
+                    phone?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: []
+            }
             transactions: {
                 Row: {
                     amount: number
-                    created_at: string
+                    created_at: string | null
                     description: string | null
                     id: string
                     reference_id: string | null
@@ -453,7 +515,7 @@ export type Database = {
                 }
                 Insert: {
                     amount: number
-                    created_at?: string
+                    created_at?: string | null
                     description?: string | null
                     id?: string
                     reference_id?: string | null
@@ -463,7 +525,7 @@ export type Database = {
                 }
                 Update: {
                     amount?: number
-                    created_at?: string
+                    created_at?: string | null
                     description?: string | null
                     id?: string
                     reference_id?: string | null
@@ -484,51 +546,51 @@ export type Database = {
             wallets: {
                 Row: {
                     balance: number | null
-                    created_at: string
+                    created_at: string | null
                     currency: string | null
                     id: string
                     name: string
-                    updated_at: string
+                    updated_at: string | null
                 }
                 Insert: {
                     balance?: number | null
-                    created_at?: string
+                    created_at?: string | null
                     currency?: string | null
                     id?: string
                     name: string
-                    updated_at?: string
+                    updated_at?: string | null
                 }
                 Update: {
                     balance?: number | null
-                    created_at?: string
+                    created_at?: string | null
                     currency?: string | null
                     id?: string
                     name?: string
-                    updated_at?: string
+                    updated_at?: string | null
                 }
                 Relationships: []
             }
             warehouses: {
                 Row: {
                     address: string | null
-                    created_at: string
+                    created_at: string | null
                     id: string
                     name: string
-                    updated_at: string
+                    updated_at: string | null
                 }
                 Insert: {
                     address?: string | null
-                    created_at?: string
+                    created_at?: string | null
                     id?: string
                     name: string
-                    updated_at?: string
+                    updated_at?: string | null
                 }
                 Update: {
                     address?: string | null
-                    created_at?: string
+                    created_at?: string | null
                     id?: string
                     name?: string
-                    updated_at?: string
+                    updated_at?: string | null
                 }
                 Relationships: []
             }
@@ -540,7 +602,13 @@ export type Database = {
             [_ in never]: never
         }
         Enums: {
-            purchase_status: "pending" | "completed" | "cancelled"
+            purchase_status:
+            | "pending"
+            | "completed"
+            | "cancelled"
+            | "draft"
+            | "ordered"
+            | "received"
             stock_movement_type: "inbound" | "outbound" | "adjustment" | "transfer"
             transaction_type: "income" | "expense" | "adjustment"
         }
@@ -550,7 +618,7 @@ export type Database = {
     }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
+type PublicSchema = Database["public"]
 
 export type Tables<
     PublicTableNameOrOptions extends

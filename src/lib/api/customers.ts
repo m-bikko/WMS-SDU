@@ -1,12 +1,15 @@
-import { createClient } from "@/lib/supabase/client"
+"use server"
+
+import { createClient } from "@/lib/supabase/server"
 import { Database } from "@/lib/types/supabase"
+import { revalidatePath } from "next/cache"
 
 export type Customer = Database["public"]["Tables"]["customers"]["Row"]
 export type CreateCustomerInput = Database["public"]["Tables"]["customers"]["Insert"]
 export type UpdateCustomerInput = Database["public"]["Tables"]["customers"]["Update"]
 
 export async function getCustomers(query?: string) {
-    const supabase = createClient()
+    const supabase = await createClient()
     let request = supabase
         .from("customers")
         .select("*")
@@ -23,7 +26,7 @@ export async function getCustomers(query?: string) {
 }
 
 export async function getCustomer(id: string) {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from("customers")
         .select("*")
@@ -35,7 +38,7 @@ export async function getCustomer(id: string) {
 }
 
 export async function createCustomer(input: CreateCustomerInput) {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from("customers")
         .insert(input)
@@ -43,11 +46,12 @@ export async function createCustomer(input: CreateCustomerInput) {
         .single()
 
     if (error) throw error
+    revalidatePath("/customers")
     return data
 }
 
 export async function updateCustomer(id: string, input: UpdateCustomerInput) {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from("customers")
         .update(input)
@@ -56,15 +60,17 @@ export async function updateCustomer(id: string, input: UpdateCustomerInput) {
         .single()
 
     if (error) throw error
+    revalidatePath("/customers")
     return data
 }
 
 export async function deleteCustomer(id: string) {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { error } = await supabase
         .from("customers")
         .delete()
         .eq("id", id)
 
     if (error) throw error
+    revalidatePath("/customers")
 }
