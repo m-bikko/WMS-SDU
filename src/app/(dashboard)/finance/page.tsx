@@ -14,7 +14,10 @@ export default async function FinancePage() {
         }
     }
 
-    const mainWallet = wallets && wallets.length > 0 ? wallets[0] : null
+    // Prefer the wallet with the most balance/activity for demonstration
+    const mainWallet = wallets && wallets.length > 0
+        ? wallets.reduce((prev: any, current: any) => (prev.balance > current.balance) ? prev : current)
+        : null
     const transactions = mainWallet ? await getTransactions(mainWallet.id) : []
 
     return (

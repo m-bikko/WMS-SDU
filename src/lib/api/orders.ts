@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/server"
 import { Database } from "@/lib/types/supabase"
 
 export type Order = Database["public"]["Tables"]["orders"]["Row"]
@@ -20,7 +20,7 @@ export type CreateOrderInput = {
 }
 
 export async function getOrders() {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from("orders")
         .select(`
@@ -34,7 +34,7 @@ export async function getOrders() {
 }
 
 export async function getOrder(id: string) {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from("orders")
         .select(`
@@ -53,7 +53,7 @@ export async function getOrder(id: string) {
 }
 
 export async function createOrder(input: CreateOrderInput) {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Calculate total
     const total_amount = input.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
@@ -94,7 +94,7 @@ export async function createOrder(input: CreateOrderInput) {
 }
 
 export async function updateOrderStatus(id: string, status: Order["status"]) {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { error } = await supabase
         .from("orders")
         .update({ status })

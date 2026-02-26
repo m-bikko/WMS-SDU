@@ -20,13 +20,14 @@ import { ReceivePurchaseButton } from "@/components/purchases/receive-purchase-b
 import { VoidPurchaseButton } from "@/components/purchases/void-purchase-button"
 
 interface PurchasePageProps {
-    params: {
+    params: Promise<{
         id: string
-    }
+    }>
 }
 
 export default async function PurchasePage({ params }: PurchasePageProps) {
-    const purchase = await getPurchase(params.id)
+    const { id } = await params
+    const purchase = await getPurchase(id)
 
     if (!purchase) {
         notFound()
