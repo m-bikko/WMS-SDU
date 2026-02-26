@@ -19,8 +19,8 @@ export default async function InventoryDashboardPage(props: InventoryDashboardPa
     const categories = await getCategories() || []
     const warehouses = await getWarehouses() || []
 
-    const totalValue = products.reduce((acc, p) => acc + (p.cost_price * (p.total_stock || 0)), 0)
-    const lowStockCount = products.filter(p => (p.total_stock || 0) <= (p.low_stock_threshold || 5)).length
+    const totalValue = products.reduce((acc, p) => acc + ((Number(p.cost_price) || 0) * (Number(p.total_stock) || 0)), 0)
+    const lowStockCount = products.filter(p => (Number(p.total_stock) || 0) <= (Number(p.low_stock_threshold) || 5)).length
 
     return (
         <div className="space-y-6">
@@ -58,7 +58,7 @@ export default async function InventoryDashboardPage(props: InventoryDashboardPa
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">₸{totalValue.toFixed(2)}</div>
+                        <div className="text-2xl font-bold">{totalValue.toLocaleString("ru-RU", { style: "currency", currency: "KZT", maximumFractionDigits: 0 })}</div>
                     </CardContent>
                 </Card>
             </div>

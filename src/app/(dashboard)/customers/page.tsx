@@ -1,5 +1,6 @@
 import { getCustomers } from "@/lib/api/customers"
 import { CustomerDialog } from "@/components/customers/customer-dialog"
+import { CustomerActions } from "@/components/customers/customer-actions"
 import {
     Table,
     TableBody,
@@ -36,12 +37,13 @@ export default async function CustomersPage(props: { searchParams: Promise<{ que
                             <TableHead>Phone</TableHead>
                             <TableHead>Address</TableHead>
                             <TableHead className="text-right">Joined</TableHead>
+                            <TableHead className="text-right w-[60px]"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {customers.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={6} className="h-24 text-center">
                                     No customers found.
                                 </TableCell>
                             </TableRow>
@@ -56,6 +58,9 @@ export default async function CustomersPage(props: { searchParams: Promise<{ que
                                     </TableCell>
                                     <TableCell className="text-right text-muted-foreground">
                                         {format(new Date(customer.created_at), "MMM dd, yyyy")}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <CustomerActions customer={customer} />
                                     </TableCell>
                                 </TableRow>
                             ))

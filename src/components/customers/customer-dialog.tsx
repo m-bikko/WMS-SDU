@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { createCustomer } from "@/lib/api/customers"
+import { createCustomer, updateCustomer, Customer } from "@/lib/api/customers"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -30,14 +30,25 @@ import { Plus } from "lucide-react"
 const formSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email().optional().or(z.literal("")),
-    phone: z.string().optional(),
-    address: z.string().optional(),
+    phone: z.string().optional().or(z.literal("")),
+    address: z.string().optional().or(z.literal("")),
 })
 
-export function CustomerDialog() {
-    const [open, setOpen] = useState(false)
+interface CustomerDialogProps {
+    customer?: Customer; // If provided, we are in Edit mode
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    trigger?: React.ReactNode;
+}
+
+export function CustomerDialog({ customer, open: externalOpen, onOpenChange: externalOnOpenChange, trigger }: CustomerDialogProps) {
+    const [internalOpen, setInternalOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
+
+    const isControlled = externalOpen !== undefined && externalOnOpenChange !== undefined
+    const open = isControlled ? externalOpen : internalOpen
+    const setOpen = isControlled ? externalOnOpenChange : setInternalOpen
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -49,34 +60,65 @@ export function CustomerDialog() {
         },
     })
 
+    // Reset form when opening/closing or when customer changes
+    useEffect(() => {
+        if (open) {
+            if (customer) {
+                form.reset({
+                    name: customer.name || "",
+                    email: customer.email || "",
+                    phone: customer.phone || "",
+                    address: customer.address || "",
+                })
+            } else {
+                form.reset({
+                    name: "",
+                    email: "",
+                    phone: "",
+                    address: "",
+                })
+            }
+        }
+    }, [open, customer, form])
+
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsLoading(true)
         try {
-            await createCustomer(values)
-            toast.success("Customer created")
+            if (customer) {
+                await updateCustomer(customer.id, values)
+                toast.success("Customer updated")
+            } else {
+                await createCustomer(values)
+                toast.success("Customer created")
+            }
             setOpen(false)
-            form.reset()
             router.refresh()
         } catch (error) {
             console.error(error)
-            toast.error("Failed to create customer")
+            toast.error(`Failed to ${customer ? 'update' : 'create'} customer`)
         } finally {
             setIsLoading(false)
         }
     }
 
+    const defaultTrigger = (
+        <Button>
+            <Plus className="mr-2 h-4 w-4" /> Add Customer
+        </Button>
+    )
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button>
-                    <Plus className="mr-2 h-4 w-4" /> Add Customer
-                </Button>
-            </DialogTrigger>
+            {trigger !== null && (
+                <DialogTrigger asChild>
+                    {trigger || defaultTrigger}
+                </DialogTrigger>
+            )}
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Add Customer</DialogTitle>
+                    <DialogTitle>{customer ? 'Edit Customer' : 'Add Customer'}</DialogTitle>
                     <DialogDescription>
-                        Create a new customer profile.
+                        {customer ? 'Update the details for this customer.' : 'Create a new customer profile.'}
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -134,7 +176,7 @@ export function CustomerDialog() {
                             )}
                         />
                         <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? "Saving..." : "Save Customer"}
+                            {isLoading ? "Saving..." : customer ? "Update Customer" : "Save Customer"}
                         </Button>
                     </form>
                 </Form>

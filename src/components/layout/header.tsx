@@ -9,7 +9,7 @@ import { UserNav } from "@/components/layout/user-nav"
 export function Header() {
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 items-center">
+            <div className="flex h-14 items-center px-8 md:px-12">
                 {/* Mobile Menu */}
                 <div className="mr-4 md:hidden">
                     <Sheet>
