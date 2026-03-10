@@ -40,9 +40,9 @@ export async function POST() {
         const totalOrders = 200;
         let successfulOrders = 0;
 
-        // Create a massive inbound stock movement to guarantee we don't hit negative stock constraints 
+        // Create a modest inbound stock movement to guarantee we don't hit negative stock constraints 
         // if there are any, and simply to make sure we have inventory to fulfill
-        console.log("Briefly restocking all products by 1000 units just in case...");
+        console.log("Briefly restocking all products by 50 units just in case...");
         const whResponse = await supabase.from('warehouses').select('*').limit(1).single();
         if (!whResponse.data) throw new Error("No warehouse found");
         const defaultWh = whResponse.data.id;
@@ -52,9 +52,9 @@ export async function POST() {
                 .select('*').eq('product_id', p.id).eq('warehouse_id', defaultWh).maybeSingle();
 
             if (existingStock) {
-                await supabase.from('product_stocks').update({ quantity: existingStock.quantity + 1000 }).eq('id', existingStock.id);
+                await supabase.from('product_stocks').update({ quantity: existingStock.quantity + 50 }).eq('id', existingStock.id);
             } else {
-                await supabase.from('product_stocks').insert({ product_id: p.id, warehouse_id: defaultWh, quantity: 1000 });
+                await supabase.from('product_stocks').insert({ product_id: p.id, warehouse_id: defaultWh, quantity: 50 });
             }
 
             // Recalculate total_stock
@@ -68,19 +68,27 @@ export async function POST() {
         // Create 200 Orders
         for (let i = 0; i < totalOrders; i++) {
             const customer = dbCustomers[Math.floor(Math.random() * dbCustomers.length)];
-            const orderItems = [];
+            const orderItems: {
+                product_id: string;
+                quantity: number;
+                unit_price: number;
+                wh: string;
+                stockId: string;
+                currentQty: number;
+            }[] = [];
             let totalAmount = 0;
 
-            // 1 to 5 different products per order
-            const numProducts = Math.floor(Math.random() * 5) + 1;
+            // 1 to 2 different products per order
+            const numProducts = Math.floor(Math.random() * 2) + 1;
 
             for (let j = 0; j < numProducts; j++) {
                 const prod = dbProducts[Math.floor(Math.random() * dbProducts.length)];
 
                 const { data: st } = await supabase.from('product_stocks').select('*').eq('product_id', prod.id).limit(1);
 
-                if (st && st.length > 0) {
-                    const qty = Math.floor(Math.random() * 5) + 1; // 1-5 quantity
+                if (st && st.length > 0 && st[0].quantity > 0) {
+                    const maxQty = Math.min(st[0].quantity, 2);
+                    const qty = Math.floor(Math.random() * maxQty) + 1;
 
                     // Don't add duplicate products in the same order array
                     if (!orderItems.find(oi => oi.product_id === prod.id)) {
