@@ -1,5 +1,7 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import {
     Avatar,
     AvatarFallback,
@@ -16,8 +18,23 @@ import {
     DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { toast } from "sonner"
 
 export function UserNav() {
+    const router = useRouter()
+    const supabase = createClient()
+
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+            toast.error("Error logging out")
+            console.error(error)
+        } else {
+            router.push("/login")
+            router.refresh()
+        }
+    }
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -49,7 +66,7 @@ export function UserNav() {
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
                     Log out
                     <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
                 </DropdownMenuItem>

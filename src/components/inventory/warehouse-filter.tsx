@@ -58,9 +58,11 @@ export function WarehouseFilter({ warehouses }: WarehouseFilterProps) {
                     aria-expanded={open}
                     className="h-8 w-[200px] justify-between"
                 >
-                    {value
-                        ? warehouses.find((w) => w.id === value)?.name
-                        : "Filter by warehouse..."}
+                    <span className="truncate">
+                        {value
+                            ? warehouses.find((w) => w.id === value)?.name
+                            : "Filter by warehouse..."}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>

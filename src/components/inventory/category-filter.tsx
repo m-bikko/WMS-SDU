@@ -58,9 +58,11 @@ export function CategoryFilter({ categories }: CategoryFilterProps) {
                     aria-expanded={open}
                     className="h-8 w-[200px] justify-between"
                 >
-                    {value
-                        ? categories.find((category) => category.id === value)?.name
-                        : "Filter by category..."}
+                    <span className="truncate">
+                        {value
+                            ? categories.find((category) => category.id === value)?.name
+                            : "Filter by category..."}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>

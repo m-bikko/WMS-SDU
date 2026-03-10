@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, ClipboardList, Home, LayoutDashboard, Package, Settings, ShoppingCart, Users, ShoppingBag, Banknote, Truck, Layers } from "lucide-react"
+import { BarChart3, ClipboardList, Home, LayoutDashboard, Package, Settings, ShoppingCart, Users, ShoppingBag, Banknote, Truck, Layers, BookOpen } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -78,6 +78,12 @@ export function Sidebar({ className }: SidebarProps) {
             icon: Settings,
             href: "/settings",
             active: pathname === "/settings",
+        },
+        {
+            label: "API Docs",
+            icon: BookOpen,
+            href: "/api-docs",
+            active: pathname.startsWith("/api-docs"),
         },
     ]
 
