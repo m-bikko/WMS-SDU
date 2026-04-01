@@ -1,7 +1,7 @@
 "use client"
 
 import { Menu } from "lucide-react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Sidebar } from "@/components/layout/sidebar"
 import { UserNav } from "@/components/layout/user-nav"
@@ -19,8 +19,9 @@ export function Header() {
                                 <span className="sr-only">Toggle Menu</span>
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" className="pr-0">
-                            <Sidebar className="px-2" />
+                        <SheetContent side="left" className="p-0 pt-6">
+                            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                            <Sidebar />
                         </SheetContent>
                     </Sheet>
                 </div>
