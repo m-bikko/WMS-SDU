@@ -10,8 +10,13 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { format } from "date-fns"
+import { getCurrentUserContext } from "@/lib/auth/current-user"
+import { redirect } from "next/navigation"
 
 export default async function CustomersPage(props: { searchParams: Promise<{ query?: string }> }) {
+    const { isSuperAdmin } = await getCurrentUserContext()
+    if (!isSuperAdmin) redirect("/dashboard")
+
     const searchParams = await props.searchParams
     const query = searchParams?.query || ""
 

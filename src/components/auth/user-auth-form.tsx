@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createClient } from "@/lib/supabase/client"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { provisionTenant } from "@/lib/api/provision"
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
     type?: "login" | "signup"
@@ -54,7 +55,7 @@ export function UserAuthForm({ className, type = "login", ...props }: UserAuthFo
                 router.push("/dashboard")
                 router.refresh()
             } else {
-                const { error } = await supabase.auth.signUp({
+                const { data: signUpData, error } = await supabase.auth.signUp({
                     email: data.email,
                     password: data.password,
                     options: {
@@ -62,10 +63,13 @@ export function UserAuthForm({ className, type = "login", ...props }: UserAuthFo
                     },
                 })
                 if (error) throw error
-                // For signup, usually check email, but let's redirect to dashboard if auto-confirm is on, 
-                // or show a message.
-                // If Supabase has email confirm on, user needs to check email.
-                router.push("/dashboard?message=check-email")
+                // If session was created (email confirm off) — provision tenant resources
+                if (signUpData.session) {
+                    await provisionTenant().catch((e) => console.error("provisionTenant failed:", e))
+                    router.push("/dashboard")
+                } else {
+                    router.push("/dashboard?message=check-email")
+                }
             }
         } catch (err: any) {
             setError(err.message || "Something went wrong")

@@ -30,6 +30,7 @@
     "swagger-ui-react": "^5.32.0",
     "tailwind-merge": "^3.4.0",
     "use-debounce": "^10.1.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {

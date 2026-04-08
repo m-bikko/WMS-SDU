@@ -1,12 +1,16 @@
 import { createClient } from "@/lib/supabase/server"
+import { getCurrentUserContext } from "@/lib/auth/current-user"
 
 export async function getDashboardData() {
+    const { userId, isSuperAdmin } = await getCurrentUserContext()
     const supabase = await createClient()
 
     // 1. Total Revenue (Completed Orders sum)
-    let { data: ordersData, error: ordersError } = await supabase
+    let ordersQuery = supabase
         .from('orders')
         .select('total_amount, status, created_at')
+    if (!isSuperAdmin) ordersQuery = ordersQuery.eq('owner_id', userId)
+    const { data: ordersData, error: ordersError } = await ordersQuery
 
     const orders = ordersData || []
 
@@ -19,7 +23,7 @@ export async function getDashboardData() {
     const activeOrders = orders.filter(o => !['completed', 'cancelled', 'voided', 'delivered'].includes(o.status)).length
 
     // 2. Inventory Value & Low Stock
-    let { data: productsData, error: productsError } = await supabase
+    let productsQuery = supabase
         .from('products')
         .select(`
             id,
@@ -30,6 +34,8 @@ export async function getDashboardData() {
             category_id,
             categories (name)
         `)
+    if (!isSuperAdmin) productsQuery = productsQuery.eq('owner_id', userId)
+    const { data: productsData, error: productsError } = await productsQuery
 
     const products = productsData || []
 
@@ -84,7 +90,7 @@ export async function getDashboardData() {
     let activityLog: any[] = []
 
     // Fetch recent purchases
-    let { data: recentPurchases } = await supabase
+    let recentPurchasesQuery = supabase
         .from('purchases')
         .select(`
             id,
@@ -97,6 +103,8 @@ export async function getDashboardData() {
         `)
         .order('created_at', { ascending: false })
         .limit(5)
+    if (!isSuperAdmin) recentPurchasesQuery = recentPurchasesQuery.eq('owner_id', userId)
+    const { data: recentPurchases } = await recentPurchasesQuery
 
     if (recentPurchases) {
         recentPurchases.forEach(p => {
@@ -115,7 +123,7 @@ export async function getDashboardData() {
     }
 
     // Fetch recent orders
-    let { data: recentOrders } = await supabase
+    let recentOrdersQuery = supabase
         .from('orders')
         .select(`
             id,
@@ -128,6 +136,8 @@ export async function getDashboardData() {
         `)
         .order('created_at', { ascending: false })
         .limit(5)
+    if (!isSuperAdmin) recentOrdersQuery = recentOrdersQuery.eq('owner_id', userId)
+    const { data: recentOrders } = await recentOrdersQuery
 
     if (recentOrders) {
         recentOrders.forEach(o => {

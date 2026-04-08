@@ -1,21 +1,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Package, Truck, AlertTriangle, Wallet, ShoppingCart, ArrowDown } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+import { getCurrentUserContext } from "@/lib/auth/current-user"
 
 export default async function DashboardPage() {
+    const { userId, isSuperAdmin } = await getCurrentUserContext()
     const supabase = await createClient()
 
-    // Fetch Key Metrics
-    const { count: productCount } = await supabase.from("products").select("*", { count: 'exact', head: true })
-    const { count: lowStockCount } = await supabase.from("products").select("*", { count: 'exact', head: true }).lt("total_stock", 10) // Assuming 10 is global threshold or check individual
-    // Note: low_stock_threshold is per product, so simple query might be tricky. Using simple check for now.
+    // Fetch Key Metrics — scoped by tenant
+    let productsCountQuery = supabase.from("products").select("*", { count: 'exact', head: true })
+    if (!isSuperAdmin) productsCountQuery = productsCountQuery.eq("owner_id", userId)
+    const { count: productCount } = await productsCountQuery
 
-    // Calculate Total Revenue (completed orders)
-    const { data: revenueData } = await supabase.from("orders").select("total_amount").eq("status", "completed")
+    let lowStockCountQuery = supabase.from("products").select("*", { count: 'exact', head: true }).lt("total_stock", 10)
+    if (!isSuperAdmin) lowStockCountQuery = lowStockCountQuery.eq("owner_id", userId)
+    const { count: lowStockCount } = await lowStockCountQuery
+
+    let revenueQuery = supabase.from("orders").select("total_amount").eq("status", "completed")
+    if (!isSuperAdmin) revenueQuery = revenueQuery.eq("owner_id", userId)
+    const { data: revenueData } = await revenueQuery
     const totalRevenue = revenueData?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0
 
-    // Get Wallet Balance
-    const { data: wallet } = await supabase.from("wallets").select("balance").limit(1).single()
+    let walletQuery = supabase.from("wallets").select("balance").limit(1)
+    if (!isSuperAdmin) walletQuery = walletQuery.eq("owner_id", userId)
+    const { data: wallet } = await walletQuery.maybeSingle()
     const walletBalance = wallet ? Number(wallet.balance) : 0
 
     return (

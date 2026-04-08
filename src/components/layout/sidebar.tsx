@@ -7,12 +7,14 @@ import { BarChart3, ClipboardList, Home, LayoutDashboard, Package, Settings, Sho
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
+    isSuperAdmin?: boolean
+}
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className, isSuperAdmin = false }: SidebarProps) {
     const pathname = usePathname()
 
-    const routes = [
+    const allRoutes = [
         {
             label: "Dashboard",
             icon: Home,
@@ -87,12 +89,17 @@ export function Sidebar({ className }: SidebarProps) {
         },
     ]
 
+    // Hide Customers from non-super-admin users
+    const routes = isSuperAdmin
+        ? allRoutes
+        : allRoutes.filter((r) => r.href !== "/customers")
+
     return (
         <div className={cn("pb-12", className)}>
             <div className="space-y-4 py-4">
                 <div className="px-3 py-2">
                     <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-                        WMS Project
+                        {isSuperAdmin ? "WMS · Super Admin" : "WMS Project"}
                     </h2>
                     <div className="space-y-1">
                         {routes.map((route) => (

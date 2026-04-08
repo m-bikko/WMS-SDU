@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Sidebar } from "@/components/layout/sidebar"
 import { UserNav } from "@/components/layout/user-nav"
 
-export function Header() {
+export function Header({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-14 items-center px-8 md:px-12">
@@ -21,7 +21,7 @@ export function Header() {
                         </SheetTrigger>
                         <SheetContent side="left" className="p-0 pt-6">
                             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                            <Sidebar />
+                            <Sidebar isSuperAdmin={isSuperAdmin} />
                         </SheetContent>
                     </Sheet>
                 </div>
@@ -30,7 +30,7 @@ export function Header() {
                 <div className="mr-4 hidden md:flex">
                     <a className="mr-6 flex items-center space-x-2" href="/">
                         <span className="hidden font-bold sm:inline-block">
-                            WMS
+                            {isSuperAdmin ? "WMS · Super Admin" : "WMS"}
                         </span>
                     </a>
                 </div>

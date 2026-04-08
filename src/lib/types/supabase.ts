@@ -19,6 +19,7 @@ export type Database = {
                     path: string[] | null
                     slug: string
                     updated_at: string | null
+                    owner_id: string | null
                 }
                 Insert: {
                     created_at?: string | null
@@ -29,6 +30,7 @@ export type Database = {
                     path?: string[] | null
                     slug: string
                     updated_at?: string | null
+                    owner_id?: string | null
                 }
                 Update: {
                     created_at?: string | null
@@ -39,6 +41,7 @@ export type Database = {
                     path?: string[] | null
                     slug?: string
                     updated_at?: string | null
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -88,6 +91,7 @@ export type Database = {
                     id: string
                     type: string | null
                     warehouse_id: string
+                    owner_id: string | null
                 }
                 Insert: {
                     code: string
@@ -96,6 +100,7 @@ export type Database = {
                     id?: string
                     type?: string | null
                     warehouse_id: string
+                    owner_id?: string | null
                 }
                 Update: {
                     code?: string
@@ -104,6 +109,7 @@ export type Database = {
                     id?: string
                     type?: string | null
                     warehouse_id?: string
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -123,6 +129,7 @@ export type Database = {
                     product_id: string
                     quantity: number
                     unit_price: number
+                    owner_id: string | null
                 }
                 Insert: {
                     created_at?: string
@@ -131,6 +138,7 @@ export type Database = {
                     product_id: string
                     quantity: number
                     unit_price: number
+                    owner_id?: string | null
                 }
                 Update: {
                     created_at?: string
@@ -139,6 +147,7 @@ export type Database = {
                     product_id?: string
                     quantity?: number
                     unit_price?: number
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -166,6 +175,7 @@ export type Database = {
                     status: string
                     total_amount: number
                     updated_at: string
+                    owner_id: string | null
                 }
                 Insert: {
                     created_at?: string
@@ -175,6 +185,7 @@ export type Database = {
                     status?: string
                     total_amount?: number
                     updated_at?: string
+                    owner_id?: string | null
                 }
                 Update: {
                     created_at?: string
@@ -184,6 +195,7 @@ export type Database = {
                     status?: string
                     total_amount?: number
                     updated_at?: string
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -202,6 +214,7 @@ export type Database = {
                     quantity: number
                     updated_at: string
                     warehouse_id: string
+                    owner_id: string | null
                 }
                 Insert: {
                     id?: string
@@ -209,6 +222,7 @@ export type Database = {
                     quantity?: number
                     updated_at?: string
                     warehouse_id: string
+                    owner_id?: string | null
                 }
                 Update: {
                     id?: string
@@ -216,6 +230,7 @@ export type Database = {
                     quantity?: number
                     updated_at?: string
                     warehouse_id?: string
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -255,6 +270,7 @@ export type Database = {
                     total_stock: number | null
                     updated_at: string | null
                     warehouse_id: string | null
+                    owner_id: string | null
                 }
                 Insert: {
                     attributes?: Json | null
@@ -276,6 +292,7 @@ export type Database = {
                     total_stock?: number | null
                     updated_at?: string | null
                     warehouse_id?: string | null
+                    owner_id?: string | null
                 }
                 Update: {
                     attributes?: Json | null
@@ -297,6 +314,7 @@ export type Database = {
                     total_stock?: number | null
                     updated_at?: string | null
                     warehouse_id?: string | null
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -323,6 +341,7 @@ export type Database = {
                     purchase_id: string
                     quantity: number
                     unit_cost: number
+                    owner_id: string | null
                 }
                 Insert: {
                     created_at?: string | null
@@ -331,6 +350,7 @@ export type Database = {
                     purchase_id: string
                     quantity: number
                     unit_cost: number
+                    owner_id?: string | null
                 }
                 Update: {
                     created_at?: string | null
@@ -339,6 +359,7 @@ export type Database = {
                     purchase_id?: string
                     quantity?: number
                     unit_cost?: number
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -369,6 +390,7 @@ export type Database = {
                     total_amount: number | null
                     updated_at: string | null
                     warehouse_id: string | null
+                    owner_id: string | null
                 }
                 Insert: {
                     created_at?: string | null
@@ -381,6 +403,7 @@ export type Database = {
                     total_amount?: number | null
                     updated_at?: string | null
                     warehouse_id?: string | null
+                    owner_id?: string | null
                 }
                 Update: {
                     created_at?: string | null
@@ -393,6 +416,7 @@ export type Database = {
                     total_amount?: number | null
                     updated_at?: string | null
                     warehouse_id?: string | null
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -422,6 +446,7 @@ export type Database = {
                     reference_id: string | null
                     type: Database["public"]["Enums"]["stock_movement_type"]
                     warehouse_id: string
+                    owner_id: string | null
                 }
                 Insert: {
                     created_at?: string | null
@@ -433,6 +458,7 @@ export type Database = {
                     reference_id?: string | null
                     type: Database["public"]["Enums"]["stock_movement_type"]
                     warehouse_id: string
+                    owner_id?: string | null
                 }
                 Update: {
                     created_at?: string | null
@@ -444,6 +470,7 @@ export type Database = {
                     reference_id?: string | null
                     type?: Database["public"]["Enums"]["stock_movement_type"]
                     warehouse_id?: string
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -479,6 +506,7 @@ export type Database = {
                     name: string
                     phone: string | null
                     updated_at: string | null
+                    owner_id: string | null
                 }
                 Insert: {
                     address?: string | null
@@ -489,6 +517,7 @@ export type Database = {
                     name: string
                     phone?: string | null
                     updated_at?: string | null
+                    owner_id?: string | null
                 }
                 Update: {
                     address?: string | null
@@ -499,6 +528,7 @@ export type Database = {
                     name?: string
                     phone?: string | null
                     updated_at?: string | null
+                    owner_id?: string | null
                 }
                 Relationships: []
             }
@@ -512,6 +542,7 @@ export type Database = {
                     reference_type: string | null
                     type: Database["public"]["Enums"]["transaction_type"]
                     wallet_id: string
+                    owner_id: string | null
                 }
                 Insert: {
                     amount: number
@@ -522,6 +553,7 @@ export type Database = {
                     reference_type?: string | null
                     type: Database["public"]["Enums"]["transaction_type"]
                     wallet_id: string
+                    owner_id?: string | null
                 }
                 Update: {
                     amount?: number
@@ -532,6 +564,7 @@ export type Database = {
                     reference_type?: string | null
                     type?: Database["public"]["Enums"]["transaction_type"]
                     wallet_id?: string
+                    owner_id?: string | null
                 }
                 Relationships: [
                     {
@@ -551,6 +584,7 @@ export type Database = {
                     id: string
                     name: string
                     updated_at: string | null
+                    owner_id: string | null
                 }
                 Insert: {
                     balance?: number | null
@@ -559,6 +593,7 @@ export type Database = {
                     id?: string
                     name: string
                     updated_at?: string | null
+                    owner_id?: string | null
                 }
                 Update: {
                     balance?: number | null
@@ -567,6 +602,7 @@ export type Database = {
                     id?: string
                     name?: string
                     updated_at?: string | null
+                    owner_id?: string | null
                 }
                 Relationships: []
             }
@@ -577,6 +613,7 @@ export type Database = {
                     id: string
                     name: string
                     updated_at: string | null
+                    owner_id: string | null
                 }
                 Insert: {
                     address?: string | null
@@ -584,6 +621,7 @@ export type Database = {
                     id?: string
                     name: string
                     updated_at?: string | null
+                    owner_id?: string | null
                 }
                 Update: {
                     address?: string | null
@@ -591,6 +629,7 @@ export type Database = {
                     id?: string
                     name?: string
                     updated_at?: string | null
+                    owner_id?: string | null
                 }
                 Relationships: []
             }

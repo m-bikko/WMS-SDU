@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { getCurrentUserContext } from "@/lib/auth/current-user"
 
 export type Product = {
     id: string
@@ -24,32 +25,11 @@ export type Product = {
 }
 
 export async function getProducts(query?: string, categoryId?: string, warehouseId?: string) {
+    const { userId, isSuperAdmin } = await getCurrentUserContext()
     const supabase = await createClient()
 
-    let dbQuery = supabase
-        .from("products")
-        .select(`
-      *,
-      categories (
-        name
-      ),
-      product_stocks (
-        warehouse_id,
-        quantity
-      )
-    `)
+    let dbQuery: any
 
-    if (query) {
-        dbQuery = dbQuery.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
-    }
-
-    if (categoryId && categoryId !== "null") {
-        dbQuery = dbQuery.eq("category_id", categoryId)
-    }
-
-    // Filter by warehouse if selected (using inner join logic manually or post-filter)
-    // Supabase standard .eq on joined table filters parent rows? No, it filters the joined rows.
-    // To filter products that *have* stock in a warehouse, uses !inner.
     if (warehouseId && warehouseId !== "null") {
         dbQuery = supabase
             .from("products")
@@ -59,31 +39,40 @@ export async function getProducts(query?: string, categoryId?: string, warehouse
         product_stocks!inner (warehouse_id, quantity)
       `)
             .eq("product_stocks.warehouse_id", warehouseId)
+    } else {
+        dbQuery = supabase
+            .from("products")
+            .select(`
+        *,
+        categories (name),
+        product_stocks (warehouse_id, quantity)
+      `)
+    }
 
-        if (query) {
-            dbQuery = dbQuery.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
-        }
-        if (categoryId && categoryId !== "null") {
-            dbQuery = dbQuery.eq("category_id", categoryId)
-        }
+    if (query) {
+        dbQuery = dbQuery.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+    }
+
+    if (categoryId && categoryId !== "null") {
+        dbQuery = dbQuery.eq("category_id", categoryId)
+    }
+
+    if (!isSuperAdmin) {
+        dbQuery = dbQuery.eq("owner_id", userId)
     }
 
     const { data: products, error } = await dbQuery.order("created_at", { ascending: false })
-
     if (error) throw new Error(error.message)
 
-    // Map stocks to a cleaner format and calculate total stock dynamically if needed
-    // For now, we trust the `total_stock` column or re-calculate it.
-    // Let's re-calculate total_stock from stocks if available, for accuracy.
     return products.map((p: any) => ({
         ...p,
         stocks: p.product_stocks,
-        // Override total_stock with sum of warehouse stocks if we have them
         total_stock: p.product_stocks?.reduce((sum: number, s: any) => sum + s.quantity, 0) ?? p.total_stock ?? 0
     }))
 }
 
 export async function createProduct(formData: FormData) {
+    const { userId } = await getCurrentUserContext()
     const supabase = await createClient()
 
     const name = formData.get("name") as string
@@ -95,10 +84,7 @@ export async function createProduct(formData: FormData) {
     const sales_price = parseFloat(formData.get("sales_price") as string) || 0
     const images = formData.get("images") ? JSON.parse(formData.get("images") as string) : []
 
-    // Parse stocks mapping: { [warehouseId]: quantity }
     const stocksMap = formData.get("stocks") ? JSON.parse(formData.get("stocks") as string) : {}
-
-    // Calculate total stock
     const total_stock = Object.values(stocksMap).reduce((sum: number, qty: any) => sum + (parseInt(qty) || 0), 0)
 
     const { data: product, error } = await supabase.from("products").insert({
@@ -110,21 +96,19 @@ export async function createProduct(formData: FormData) {
         cost_price,
         sales_price,
         images,
-        total_stock, // cache total
+        total_stock,
+        owner_id: userId,
     }).select().single()
 
-    if (error) {
-        return { error: error.message }
-    }
+    if (error) return { error: error.message }
 
-    // Insert stocks
     if (Object.keys(stocksMap).length > 0) {
         const stockInserts = Object.entries(stocksMap).map(([warehouseId, quantity]) => ({
             product_id: product.id,
             warehouse_id: warehouseId,
-            quantity: parseInt(quantity as string) || 0
+            quantity: parseInt(quantity as string) || 0,
+            owner_id: userId,
         }))
-
         const { error: stockError } = await supabase.from("product_stocks").insert(stockInserts)
         if (stockError) console.error("Error creating stocks:", stockError)
     }
@@ -134,6 +118,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(id: string, formData: FormData) {
+    const { userId, isSuperAdmin } = await getCurrentUserContext()
     const supabase = await createClient()
 
     const name = formData.get("name") as string
@@ -145,11 +130,10 @@ export async function updateProduct(id: string, formData: FormData) {
     const sales_price = parseFloat(formData.get("sales_price") as string) || 0
     const images = formData.get("images") ? JSON.parse(formData.get("images") as string) : []
 
-    // Stocks
     const stocksMap = formData.get("stocks") ? JSON.parse(formData.get("stocks") as string) : {}
     const total_stock = Object.values(stocksMap).reduce((sum: number, qty: any) => sum + (parseInt(qty) || 0), 0)
 
-    const { error } = await supabase
+    let updateQuery = supabase
         .from("products")
         .update({
             name,
@@ -163,19 +147,18 @@ export async function updateProduct(id: string, formData: FormData) {
             total_stock,
         })
         .eq("id", id)
+    if (!isSuperAdmin) updateQuery = updateQuery.eq("owner_id", userId)
 
-    if (error) {
-        return { error: error.message }
-    }
+    const { error } = await updateQuery
+    if (error) return { error: error.message }
 
-    // Update stocks (Upsert)
     if (Object.keys(stocksMap).length > 0) {
         const stockUpserts = Object.entries(stocksMap).map(([warehouseId, quantity]) => ({
             product_id: id,
             warehouse_id: warehouseId,
-            quantity: parseInt(quantity as string) || 0
+            quantity: parseInt(quantity as string) || 0,
+            owner_id: userId,
         }))
-
         const { error: stockError } = await supabase.from("product_stocks").upsert(stockUpserts, {
             onConflict: 'product_id,warehouse_id'
         })
@@ -187,17 +170,14 @@ export async function updateProduct(id: string, formData: FormData) {
 }
 
 export async function deleteProduct(id: string) {
+    const { userId, isSuperAdmin } = await getCurrentUserContext()
     const supabase = await createClient()
 
-    // Stocks should cascade delete due to FK constraint
-    const { error } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", id)
+    let query = supabase.from("products").delete().eq("id", id)
+    if (!isSuperAdmin) query = query.eq("owner_id", userId)
 
-    if (error) {
-        return { error: error.message }
-    }
+    const { error } = await query
+    if (error) return { error: error.message }
 
     revalidatePath("/inventory/products")
     return { success: true }
